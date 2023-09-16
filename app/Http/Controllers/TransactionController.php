@@ -59,24 +59,54 @@ class TransactionController extends Controller
     public function addDeposit(Request $request)
     {
         try {
-
-            $request->validate([
-                'user_id' => 'required|exists:users,id',
-                'amount' => 'required|numeric'
-            ]);
+            $this->validateTransaction($request);
 
             $user = User::find($request->get('user_id'));
 
-            $transaction = Transaction::create([
-                'amount' => $request->get('amount'),
-                'user_id' => $user->id,
-                'fee' => $this->feeCalculatorFactory
+            $transaction = $this->store(
+                $request->get('amount'),
+                $user->id,
+                $this->feeCalculatorFactory
                     ->getFeeCalculator($this->getAccountType($user), self::DEPOSIT)
-                    ->calculateFee($request->get('amount')),
-                'transaction_type' => TransactionTypes::deposit()->value
-            ]);
+                    ->calculateFee($user, $request->get('amount')),
+                TransactionTypes::deposit()->value
+            );
 
             $user->balance = $user->balance + $request->get('amount');
+            $user->save();
+
+            return response()->json($transaction);
+        } catch (\Exception $exception)
+        {
+            Log::error($exception);
+            return response()->json('Internal Server Error', 500);
+        }
+    }
+
+    public function addWidrawal(Request $request)
+    {
+        try {
+            $this->validateTransaction($request);
+
+            $user = User::find($request->get('user_id'));
+
+            $fee = $this->feeCalculatorFactory
+                ->getFeeCalculator($this->getAccountType($user), self::WIDRAWAL)
+                ->calculateFee($user, $request->get('amount'));
+
+            if($fee + $request->get('amount') > $user->balance)
+            {
+                return response()->json('Not enough amount', 403);
+            }
+
+            $transaction = $this->store(
+                $request->get('amount'),
+                $user->id,
+                $fee,
+                TransactionTypes::widrawal()->value
+            );
+
+            $user->balance = $user->balance - $request->get('amount') - $fee;
             $user->save();
 
             return response()->json($transaction);
@@ -104,6 +134,18 @@ class TransactionController extends Controller
         return $query;
     }
 
+    private function store($amount, $userId, $fee, $type)
+    {
+        $transaction = Transaction::create([
+            'amount' => $amount,
+            'user_id' => $userId,
+            'fee' => $fee,
+            'transaction_type' => $type
+        ]);
+
+        return $transaction;
+    }
+
     private function getAccountType(User $user)
     {
         if($user->account)
@@ -112,5 +154,14 @@ class TransactionController extends Controller
         }
 
         return 'business';
+    }
+
+    private function validateTransaction(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'amount' => 'required|numeric'
+        ]);
+
     }
 }

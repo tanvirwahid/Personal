@@ -20,7 +20,7 @@ use App\Http\Controllers\TransactionController;
 Route::group(['middleware' => ['auth:sanctum']], function () {
    Route::get('/', [TransactionController::class, 'index']);
    Route::get('/deposit', [TransactionController::class, 'deposits']);
-   Route::get('/widrawal', [TransactionController::class, 'widrawals']);
+   Route::get('/withdrawal', [TransactionController::class, 'widrawals']);
 });
 
 
@@ -28,3 +28,4 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/user', [UserController::class, 'store']);
 
 Route::post('/deposit', [TransactionController::class, 'addDeposit']);
+Route::post('/withdrawal', [TransactionController::class, 'addWidrawal']);

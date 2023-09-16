@@ -2,11 +2,19 @@
 
 namespace App\FeeCalculators\WidrawalFeeCalculators;
 
+use App\Models\User;
+
 class IndividualAccountFeeCalculator extends AbstractWidrawalFeeCalculator
 {
-    public function calculateFee($amount)
+    public function calculateFee(User $user, $amount)
     {
-        // TODO: Implement calculateFee() method.
+        return $this->getFee($user, $amount);
     }
+
+    public function totalFee(User $user, $amount)
+    {
+        return ($amount * 0.015)/100;
+    }
+
 
 }
