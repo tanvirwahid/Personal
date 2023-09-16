@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Transaction extends Model
@@ -17,8 +18,9 @@ class Transaction extends Model
         'fee',
     ];
 
-    public function transactions(): HasMany
+    public function user(): BelongsTo
     {
-        return $this->hasMany(Transaction::class);
+        return $this->belongsTo(User::class);
     }
+
 }

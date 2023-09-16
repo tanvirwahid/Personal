@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')
                 ->nullable();
-            $table->enum('transaction_type', [0, 1]);
+            $table->boolean('transaction_type');
             $table->double('amount');
             $table->decimal('fee');
 
