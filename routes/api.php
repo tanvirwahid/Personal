@@ -27,4 +27,4 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/user', [UserController::class, 'store']);
 
-
+Route::post('/deposit', [TransactionController::class, 'addDeposit']);
